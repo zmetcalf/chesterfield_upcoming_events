@@ -33,6 +33,7 @@ add_action( 'load-post-new.php', 'cf_event_meta_boxes_setup' );
 function cf_event_meta_boxes_setup() {
 
   add_action( 'add_meta_boxes', 'cf_event_add_meta_boxes' );
+  add_action( 'save_post', 'cf_save_event_meta', 10, 2 );
 }
 
 function cf_event_add_meta_boxes() {
@@ -58,4 +59,41 @@ function cf_event_meta_box( $object, $box ) {
     <input class="widefat" type="date" name="cf_event_date" value="<?php
       echo esc_attr( get_post_meta( $object->ID, 'cf_event_date', true) ); ?>" size="30" />
   </p> <?php
+}
+
+function cf_save_event_meta( $post_id, $post ) {
+  // Verify nonce
+  if ( !isset( $_POST['cf_event_nonce'] ) || !wp_verify_nonce(
+       $_POST['cf_event_nonce'], basename( __FILE__ ) ) ) {
+         return $post_id;
+  }
+
+  // Get post type
+  $post_type = get_post_type_object( $post->post_type );
+
+  // Check if user has permission to edit
+  if ( !current_user_can( $post_type->cap->edit_post, $post_id ) ) {
+    return $post_id;
+  }
+
+  // Get meta value of custom field
+  $new_meta_value = ( isset( $_POST['cf_event_date'] ) ?
+    sanitize_html_class( $_POST['cf_event_date'] ) : '' );
+
+  // Get the meta key
+  $meta_key = 'cf_event_date';
+
+  // Get meta value of custom key
+  $meta_value = get_post_meta( $post_id, $meta_key, true );
+
+  // If new value - add it
+  if ( $new_meta_value && '' == $meta_value ) {
+    add_post_meta( $post_id, $meta_key, $new_meta_value, true );
+  } elseif ( $new_meta_value && $new_meta_value != $meta_value ) {
+    // Update unmatched values
+    update_post_meta( $post_id, $meta_key, $new_meta_value );
+  } elseif ( '' == $new_meta_value && $meta_value ) {
+    // Delete if absence of data
+    delete_post_meta( $post_id, $meta_key, $meta_value );
+  }
 }

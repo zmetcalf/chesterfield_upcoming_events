@@ -97,3 +97,18 @@ function cf_save_event_meta( $post_id, $post ) {
     delete_post_meta( $post_id, $meta_key, $meta_value );
   }
 }
+
+class Event_Widget extends WP_Widget {
+
+  public function __construct() {
+    parent::__construct(
+      'event_widget',
+      __( 'Event Widget'),
+      array( 'description' => __( 'A widget to display upcoming or recent events'), )
+    );
+  }
+}
+
+add_action( 'widgets_init', function() {
+  register_widget( 'Event Widget' );
+});

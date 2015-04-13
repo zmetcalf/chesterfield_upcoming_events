@@ -37,7 +37,7 @@ function cf_event_meta_boxes_setup() {
 
 function cf_event_add_meta_boxes() {
   $screens = array( 'post',  'page' );
-  $screens = apply_filters( 'posts_with_events', $screen );
+  $screens = apply_filters( 'cf_post_types_with_events', $screen );
 
   add_meta_box(
     'cf_event',
@@ -47,4 +47,15 @@ function cf_event_add_meta_boxes() {
     'side',
     'default'
   );
+}
+
+function cf_event_meta_box( $object, $box ) {
+  wp_nonce_field( basename( __FILE__ ), 'cf_event_nonce' ); ?>
+
+  <p>
+    <label for="cf_event_date"><?php _e( "Add a date for event" ); ?></label>
+    <br />
+    <input class="widefat" type="date" name="cf_event_date" value="<?php
+      echo esc_attr( get_post_meta( $object->ID, 'cf_event_date', true) ); ?>" size="30" />
+  </p> <?php
 }

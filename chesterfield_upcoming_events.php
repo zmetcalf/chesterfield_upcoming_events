@@ -27,26 +27,6 @@ License: GPLv2 or later
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-add_action( 'init', 'add_event_type' );
-
-function add_event_type() {
-  register_post_type( 'chesterfield_event',
-    array(
-      'labels' => array(
-        'name' => __( 'Events' ),
-        'singular_name' => __( 'Event' )
-      ),
-      'public' => true
-    )
-  );
-}
-
-add_action( 'init', 'remove_cf_event_content' );
-
-function remove_cf_event_content() {
-  remove_post_type_support( 'chesterfield_event', 'editor' );
-}
-
 
 add_action( 'load-post.php', 'cf_event_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'cf_event_meta_boxes_setup' );

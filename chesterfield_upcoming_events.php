@@ -42,7 +42,7 @@ function cf_event_add_meta_boxes() {
 
   add_meta_box(
     'cf_event',
-    esc_html__( 'Event' ),
+    esc_html__( 'Event', 'cf_domain' ),
     'cf_event_meta_box',
     $screen,
     'side',
@@ -54,7 +54,7 @@ function cf_event_meta_box( $object, $box ) {
   wp_nonce_field( basename( __FILE__ ), 'cf_event_nonce' ); ?>
 
   <p>
-    <label for="cf_event_date"><?php _e( "Add a date for event" ); ?></label>
+    <label for="cf_event_date"><?php _e( "Add a date for event", 'cf_domain' ); ?></label>
     <br />
     <input class="widefat" type="date" name="cf_event_date" value="<?php
       echo esc_attr( get_post_meta( $object->ID, 'cf_event_date', true) ); ?>" size="30" />
@@ -103,12 +103,12 @@ class Event_Widget extends WP_Widget {
   public function __construct() {
     parent::__construct(
       'event_widget',
-      __( 'Event Widget'),
-      array( 'description' => __( 'A widget to display upcoming or recent events'), )
+      __( 'Event Widget', 'cf_domain'),
+      array( 'description' => __( 'A widget to display upcoming or recent events', 'cf_domain'), )
     );
   }
 }
 
 add_action( 'widgets_init', function() {
-  register_widget( 'Event Widget' );
+  register_widget( 'Event_Widget' );
 });

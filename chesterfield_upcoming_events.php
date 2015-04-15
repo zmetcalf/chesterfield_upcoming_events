@@ -27,6 +27,25 @@ License: GPLv2 or later
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+add_action( 'init', 'add_event_type' );
+
+function add_event_type() {
+  register_post_type( 'chesterfield_event',
+    array(
+      'labels' => array(
+        'name' => __( 'Events' ),
+        'singular_name' => __( 'Event' )
+      ),
+      'public' => true
+    )
+  );
+}
+
+add_action( 'init', 'remove_cf_event_content' );
+
+function remove_cf_event_content() {
+  remove_post_type_support( 'chesterfield_event', 'editor' );
+}
 
 add_action( 'load-post.php', 'cf_event_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'cf_event_meta_boxes_setup' );
@@ -107,6 +126,22 @@ class Event_Widget extends WP_Widget {
       __( 'Event Widget', 'cf_domain'),
       array( 'description' => __( 'A widget to display upcoming or recent events', 'cf_domain'), )
     );
+  }
+
+  function update( $new_instance, $old_instance ) {
+    $instance = $old_instance;
+    $instance['title'] = strip_tags( $new_instance['title'] );
+  }
+
+  function form( $instance ) {
+    $title = esc_attr( $instance['title'] );
+    ?>
+    <p>
+      <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title: ', 'cf_domain' ); ?>
+        <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" />
+      </label>
+    </p>
+    <?php
   }
 }
 

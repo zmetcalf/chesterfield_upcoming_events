@@ -36,15 +36,10 @@ function add_event_type() {
         'name' => __( 'Events' ),
         'singular_name' => __( 'Event' )
       ),
-      'public' => true
+      'public' => true,
+      'supports' => array( 'thumbnail', 'title', 'revisions' )
     )
   );
-}
-
-add_action( 'init', 'remove_cf_event_content' );
-
-function remove_cf_event_content() {
-  remove_post_type_support( 'chesterfield_event', 'editor' );
 }
 
 add_action( 'load-post.php', 'cf_event_meta_boxes_setup' );
@@ -57,7 +52,7 @@ function cf_event_meta_boxes_setup() {
 }
 
 function cf_event_add_meta_boxes() {
-  $screens = array( 'post',  'page', 'chesterfield_event' );
+  $screens = array( 'post',  'page', 'attachment', 'chesterfield_event' );
   $screens = apply_filters( 'cf_post_types_with_events', $screen );
 
   add_meta_box(
@@ -118,6 +113,7 @@ function cf_save_event_meta( $post_id, $post ) {
   }
 }
 
+
 class Event_Widget extends WP_Widget {
 
   public function __construct() {
@@ -126,6 +122,18 @@ class Event_Widget extends WP_Widget {
       __( 'Event Widget', 'cf_domain'),
       array( 'description' => __( 'A widget to display upcoming or recent events', 'cf_domain'), )
     );
+  }
+
+  function widget( $args, $instance ) {
+    extract( $args );
+    $title = apply_filters( 'widget_title', $instance['title'] );
+    ?>
+      <?php echo $before_widget; ?>
+        <?php if ( $title ): ?>
+          <?php echo $before_title . $title . $after_title; ?>
+        <?php endif; ?>
+      <?php echo $after_widget; ?>
+    <?php
   }
 
   function update( $new_instance, $old_instance ) {

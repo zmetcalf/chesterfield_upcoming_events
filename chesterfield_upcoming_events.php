@@ -127,11 +127,25 @@ class Event_Widget extends WP_Widget {
   function widget( $args, $instance ) {
     extract( $args );
     $title = apply_filters( 'widget_title', $instance['title'] );
+
+    $qry_args = array(
+      'published' => true,
+      'orderby' => 'meta_value',
+      'meta_key'=> 'cf_event_date',
+      'meta_value' => date( 'Y-m-d' ),
+      'meta_compare' => '<=',
+    );
+    $the_query = new WP_Query( $qry_args );
+
     ?>
       <?php echo $before_widget; ?>
         <?php if ( $title ): ?>
           <?php echo $before_title . $title . $after_title; ?>
         <?php endif; ?>
+        <?php while ( $the_query->have_posts() ) : $the_query->the_post(); ?>
+
+        <?php endwhile ?>
+        <?php wp_reset_postdata(); ?>
       <?php echo $after_widget; ?>
     <?php
   }

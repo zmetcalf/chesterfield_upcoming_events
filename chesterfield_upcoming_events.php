@@ -129,11 +129,13 @@ class Event_Widget extends WP_Widget {
     $title = apply_filters( 'widget_title', $instance['title'] );
 
     $qry_args = array(
+      'post_type' => 'any',
       'published' => true,
+      'order' => 'ASC',
       'orderby' => 'meta_value',
       'meta_key'=> 'cf_event_date',
       'meta_value' => date( 'Y-m-d' ),
-      'meta_compare' => '<=',
+      'meta_compare' => '>=',
     );
     $the_query = new WP_Query( $qry_args );
 
@@ -142,9 +144,16 @@ class Event_Widget extends WP_Widget {
         <?php if ( $title ): ?>
           <?php echo $before_title . $title . $after_title; ?>
         <?php endif; ?>
+        <ul>
         <?php while ( $the_query->have_posts() ) : $the_query->the_post(); ?>
-
+          <li>
+            <?php if ( has_post_thumbnail() ): ?>
+              <a href="<?php the_permalink(); ?>"><?php echo get_the_post_thumbnail( get_the_ID(), array ( 50, 50 ) ); ?></a>
+            <?php endif ?>
+            <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> - <?php echo date("F j", strtotime( get_post_meta( get_the_ID(), 'cf_event_date', TRUE ) ) ); ?>
+          </li>
         <?php endwhile ?>
+        </ul>
         <?php wp_reset_postdata(); ?>
       <?php echo $after_widget; ?>
     <?php
@@ -153,6 +162,7 @@ class Event_Widget extends WP_Widget {
   function update( $new_instance, $old_instance ) {
     $instance = $old_instance;
     $instance['title'] = strip_tags( $new_instance['title'] );
+    return $instance;
   }
 
   function form( $instance ) {

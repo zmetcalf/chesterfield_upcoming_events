@@ -25,7 +25,7 @@ get_header(); ?>
           );
         ?>
         </p>
-        <p><?php echo __( 'Please come back for more details.' ); ?></p>
+        <p><?php echo __( 'Please come back for more details.', 'cf_domain' ); ?></p>
       </div>
     <?php
 

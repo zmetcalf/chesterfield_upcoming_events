@@ -49,7 +49,7 @@ function get_chesterfield_event_template( $single_template ) {
 
 	$object = get_queried_object();
 	$single_postType_postName_template = locate_template(
-	  "single-{$object->post_type}-{$object->post_name}.php"
+	  "single-{$object->post_type}.php"
 	);
 	if( file_exists( $single_postType_postName_template ) )
 	{

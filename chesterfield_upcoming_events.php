@@ -42,6 +42,27 @@ function add_event_type() {
   );
 }
 
+add_filter( 'single_template', 'get_chesterfield_event_template' );
+
+function get_chesterfield_event_template( $single_template ) {
+  global $post;
+
+	$object = get_queried_object();
+	$single_postType_postName_template = locate_template(
+	  "single-{$object->post_type}-{$object->post_name}.php"
+	);
+	if( file_exists( $single_postType_postName_template ) )
+	{
+		return $single_postType_postName_template;
+	} else {
+    if ( $post->post_type == 'chesterfield_event' ) {
+      $single_template = dirname( __FILE__ ) . '/chesterfield_event_template.php';
+    }
+		return $single_template;
+	}
+  return $single_template;
+}
+
 add_action( 'load-post.php', 'cf_event_meta_boxes_setup' );
 add_action( 'load-post-new.php', 'cf_event_meta_boxes_setup' );
 
@@ -126,9 +147,11 @@ class Event_Widget extends WP_Widget {
 
   function widget( $args, $instance ) {
     extract( $args );
-    $title = apply_filters( 'widget_title', $instance['title'] );
+    $title = apply_filters( 'cf_widget_title', $instance['title'] );
+    $list_items = apply_filters( 'cf_widget_items', $instance['list_items'] );
 
     $qry_args = array(
+      'posts_per_page' => $list_items ? $list_items : -1,
       'post_type' => 'any',
       'published' => true,
       'order' => 'ASC',
@@ -148,7 +171,7 @@ class Event_Widget extends WP_Widget {
         <?php while ( $the_query->have_posts() ) : $the_query->the_post(); ?>
           <li>
             <?php if ( has_post_thumbnail() ): ?>
-              <a href="<?php the_permalink(); ?>"><?php echo get_the_post_thumbnail( get_the_ID(), array ( 50, 50 ) ); ?></a>
+              <a href="<?php the_permalink(); ?>"><?php echo get_the_post_thumbnail( get_the_ID(), array ( 40, 40 ) ); ?></a>
             <?php endif ?>
             <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> - <?php echo date("F j", strtotime( get_post_meta( get_the_ID(), 'cf_event_date', TRUE ) ) ); ?>
           </li>
@@ -162,15 +185,22 @@ class Event_Widget extends WP_Widget {
   function update( $new_instance, $old_instance ) {
     $instance = $old_instance;
     $instance['title'] = strip_tags( $new_instance['title'] );
+    $instance['list_items'] = absint( $new_instance['list_items'] );
     return $instance;
   }
 
   function form( $instance ) {
     $title = esc_attr( $instance['title'] );
+    $list_items = esc_attr( $instance['list_items'] );
     ?>
     <p>
       <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title: ', 'cf_domain' ); ?>
         <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" />
+      </label>
+    </p>
+    <p>
+      <label for="<?php echo $this->get_field_id( 'list_items' ); ?>"><?php _e( 'Listed events: ', 'cf_domain' ); ?>
+        <input class="widefat" id="<?php echo $this->get_field_id( 'list_items' ); ?>" name="<?php echo $this->get_field_name('list_items'); ?>" type="number" value="<?php echo $list_items; ?>" />
       </label>
     </p>
     <?php

@@ -94,7 +94,15 @@ function cf_event_meta_box( $object, $box ) {
     <br />
     <input class="widefat" type="date" name="cf_event_date" value="<?php
       echo esc_attr( get_post_meta( $object->ID, 'cf_event_date', true) ); ?>" size="30" />
-  </p> <?php
+  </p>
+  <p>
+    <label for="cf_event_end_date"><?php _e( "If multi-day event, add end date", 'cf_domain' ); ?></label>
+    <br />
+    <input class="widefat" type="date" name="cf_event_end_date" value="<?php
+      echo esc_attr( get_post_meta( $object->ID, 'cf_event_end_date', true) ); ?>" size="30" />
+  </p>
+
+  <?php
 }
 
 function cf_save_event_meta( $post_id, $post ) {
@@ -112,25 +120,32 @@ function cf_save_event_meta( $post_id, $post ) {
     return $post_id;
   }
 
-  // Get meta value of custom field
-  $new_meta_value = ( isset( $_POST['cf_event_date'] ) ?
-    sanitize_html_class( $_POST['cf_event_date'] ) : '' );
+  // If this is an autosave, our form has not been submitted, so we don't want to do anything.
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
 
-  // Get the meta key
-  $meta_key = 'cf_event_date';
+  $meta_fields = array( 'cf_event_date', 'cf_event_end_date' );
 
-  // Get meta value of custom key
-  $meta_value = get_post_meta( $post_id, $meta_key, true );
+  foreach ( $meta_fields as $field ) {
 
-  // If new value - add it
-  if ( $new_meta_value && '' == $meta_value ) {
-    add_post_meta( $post_id, $meta_key, $new_meta_value, true );
-  } elseif ( $new_meta_value && $new_meta_value != $meta_value ) {
-    // Update unmatched values
-    update_post_meta( $post_id, $meta_key, $new_meta_value );
-  } elseif ( '' == $new_meta_value && $meta_value ) {
-    // Delete if absence of data
-    delete_post_meta( $post_id, $meta_key, $meta_value );
+    // Get meta value of custom field
+    $new_meta_value = ( isset( $_POST[$field] ) ?
+      sanitize_html_class( $_POST[$field] ) : '' );
+
+    // Get meta value of custom key
+    $meta_value = get_post_meta( $post_id, $field, true );
+
+    // If new value - add it
+    if ( $new_meta_value && '' == $meta_value ) {
+      add_post_meta( $post_id, $field, $new_meta_value, true );
+    } elseif ( $new_meta_value && $new_meta_value != $meta_value ) {
+      // Update unmatched values
+      update_post_meta( $post_id, $field, $new_meta_value );
+    } elseif ( '' == $new_meta_value && $meta_value ) {
+      // Delete if absence of data
+      delete_post_meta( $post_id, $field, $meta_value );
+    }
   }
 }
 
@@ -173,7 +188,19 @@ class Event_Widget extends WP_Widget {
             <?php if ( has_post_thumbnail() ): ?>
               <a href="<?php the_permalink(); ?>"><?php echo get_the_post_thumbnail( get_the_ID(), array ( 40, 40 ) ); ?></a>
             <?php endif ?>
-            <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> - <?php echo date("F j", strtotime( get_post_meta( get_the_ID(), 'cf_event_date', TRUE ) ) ); ?>
+            <a href="<?php the_permalink(); ?>"><?php the_title(); ?></a> - <?php
+              $event_date = get_post_meta( get_the_ID(), 'cf_event_date', TRUE );
+              $event_end_date = get_post_meta( get_the_ID(), 'cf_event_end_date', TRUE );
+              if ( !$event_end_date OR $event_date >= $event_end_date ) {
+                echo date( "F j", strtotime( $event_date ) );
+              } else {
+                if ( date( "F", strtotime( $event_date ) ) == date("F", strtotime( $event_end_date ) ) ) {
+                  echo date( "F j", strtotime( $event_date )) . ' - ' . date( "j", strtotime( $event_end_date ) );
+                } else {
+                  echo date( "F j", strtotime( $event_date )) . ' - ' . date( "F j", strtotime( $event_end_date ) );
+                }
+              }
+            ?>
           </li>
         <?php endwhile ?>
         </ul>
@@ -199,7 +226,7 @@ class Event_Widget extends WP_Widget {
       </label>
     </p>
     <p>
-      <label for="<?php echo $this->get_field_id( 'list_items' ); ?>"><?php _e( 'Listed events: ', 'cf_domain' ); ?>
+      <label for="<?php echo $this->get_field_id( 'list_items' ); ?>"><?php _e( 'Number of Events to Show: ', 'cf_domain' ); ?>
         <input class="widefat" id="<?php echo $this->get_field_id( 'list_items' ); ?>" name="<?php echo $this->get_field_name('list_items'); ?>" type="number" value="<?php echo $list_items; ?>" />
       </label>
     </p>

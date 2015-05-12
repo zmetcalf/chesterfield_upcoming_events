@@ -30,11 +30,17 @@ License: GPLv2 or later
 add_action( 'init', 'add_event_type' );
 
 function add_event_type() {
+  $slug = 'event';
+  $slug = apply_filters( 'cf_event_type', $slug );
+
   register_post_type( 'chesterfield_event',
     array(
       'labels' => array(
         'name' => __( 'Events' ),
         'singular_name' => __( 'Event' )
+      ),
+      'rewrite' => array(
+        'slug' => $slug
       ),
       'public' => true,
       'supports' => array( 'thumbnail', 'title', 'revisions' )

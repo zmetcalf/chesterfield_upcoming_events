@@ -31,7 +31,7 @@ add_action( 'init', 'add_event_type' );
 
 function add_event_type() {
   $slug = 'event';
-  $slug = apply_filters( 'cf_event_type', $slug );
+  $slug = apply_filters( 'cf_event_type_slug', $slug );
 
   register_post_type( 'chesterfield_event',
     array(
